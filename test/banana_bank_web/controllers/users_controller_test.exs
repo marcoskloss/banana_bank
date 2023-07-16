@@ -8,7 +8,7 @@ defmodule BananaBankWeb.UsersControllerTest do
   @user_fixture %{
     name: "John Doe",
     email: "john@mail.com",
-    cep: "12312312",
+    cep: "88816122",
     password: "!@#!@#"
   }
 
