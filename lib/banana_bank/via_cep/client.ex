@@ -1,9 +1,14 @@
 defmodule BananaBank.ViaCep.Client do
   use Tesla
 
+  alias BananaBank.ViaCep.ClientBehaviour
+
   plug Tesla.Middleware.BaseUrl, "https://viacep.com.br/ws"
   plug Tesla.Middleware.JSON
 
+  @behaviour ClientBehaviour
+
+  @impl ClientBehaviour
   def verify_cep(cep) do
     get("/#{cep}/json")
     |> handle_response()

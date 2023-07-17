@@ -1,19 +1,27 @@
 defmodule BananaBankWeb.UsersControllerTest do
   use BananaBankWeb.ConnCase
 
+  import Mox
+
   alias BananaBank.Repo
   alias BananaBank.Users
   alias Users.User
 
+  setup :verify_on_exit!
+
   @user_fixture %{
     name: "John Doe",
     email: "john@mail.com",
-    cep: "88816122",
+    cep: "95095230",
     password: "!@#!@#"
   }
 
   describe "POST /api/users" do
     test "create user", %{conn: conn} do
+      expect(BananaBank.ViaCep.ClientMock, :verify_cep, fn _cep ->
+        {:ok, %{}}
+      end)
+
       response =
         conn
         |> post(~p"/api/users", @user_fixture)
@@ -25,11 +33,17 @@ defmodule BananaBankWeb.UsersControllerTest do
       } = response
     end
 
+    # One assertion for each %User{} key
     test "returns an error when the payload is invalid", %{conn: conn} do
       invalid_payloads = for key <- Map.keys(@user_fixture) do
         payload = Map.delete(@user_fixture, key)
         {payload, key}
       end
+
+      mock_calls = length(invalid_payloads)
+      expect(BananaBank.ViaCep.ClientMock, :verify_cep, mock_calls, fn _cep ->
+        {:ok, %{}}
+      end)
 
       responses =
         invalid_payloads
@@ -51,6 +65,10 @@ defmodule BananaBankWeb.UsersControllerTest do
     end
 
     test "encrypt password", %{conn: conn} do
+      expect(BananaBank.ViaCep.ClientMock, :verify_cep, fn _cep ->
+        {:ok, %{}}
+      end)
+
       response =
         conn
         |> post(~p"/api/users", @user_fixture)
@@ -65,6 +83,10 @@ defmodule BananaBankWeb.UsersControllerTest do
 
   describe "DELETE /api/users" do
     test "delete user", %{conn: conn} do
+      expect(BananaBank.ViaCep.ClientMock, :verify_cep, fn _cep ->
+        {:ok, %{}}
+      end)
+
       {:ok, user} = Users.create(@user_fixture)
 
       conn
