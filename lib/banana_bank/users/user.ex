@@ -2,8 +2,10 @@ defmodule BananaBank.Users.User do
   use Ecto.Schema
   import Ecto.Changeset
 
-  @required_params [:name, :email, :cep]
-  @required_params_with_password [:password] ++ @required_params
+  alias BananaBank.Accounts.Account
+
+  @required_update_params [:name, :email, :cep]
+  @all_params [:password] ++ @required_update_params
 
 
   @except_json_params [:__meta__, :password, :password_hash]
@@ -16,20 +18,22 @@ defmodule BananaBank.Users.User do
     field :email, :string
     field :cep, :string
 
+    has_one :account, Account
+
     timestamps()
   end
 
   def changeset_create(params) do
     %__MODULE__{}
-    |> cast(params, @required_params_with_password)
-    |> validate_required(@required_params_with_password)
+    |> cast(params, @all_params)
+    |> validate_required(@all_params)
     |> common_changeset_validations()
   end
 
   def changeset_update(user, params) do
     user
-    |> cast(params, @required_params_with_password)
-    |> validate_required(@required_params)
+    |> cast(params, @all_params)
+    |> validate_required(@required_update_params)
     |> common_changeset_validations()
   end
 

@@ -6,15 +6,9 @@ defmodule BananaBankWeb.UsersControllerTest do
   alias BananaBank.Repo
   alias BananaBank.Users
   alias Users.User
+  import BananaBank.UsersFixtures
 
   setup :verify_on_exit!
-
-  @user_fixture %{
-    name: "John Doe",
-    email: "john@mail.com",
-    cep: "95095230",
-    password: "!@#!@#"
-  }
 
   describe "POST /api/users" do
     test "create user", %{conn: conn} do
@@ -24,7 +18,7 @@ defmodule BananaBankWeb.UsersControllerTest do
 
       response =
         conn
-        |> post(~p"/api/users", @user_fixture)
+        |> post(~p"/api/users", user_fixture(:data_only))
         |> json_response(:created)
 
       assert %{
@@ -35,8 +29,10 @@ defmodule BananaBankWeb.UsersControllerTest do
 
     # One assertion for each %User{} key
     test "returns an error when the payload is invalid", %{conn: conn} do
-      invalid_payloads = for key <- Map.keys(@user_fixture) do
-        payload = Map.delete(@user_fixture, key)
+      user_data = user_fixture(:data_only)
+
+      invalid_payloads = for key <- Map.keys(user_data) do
+        payload = Map.delete(user_data, key)
         {payload, key}
       end
 
@@ -69,15 +65,17 @@ defmodule BananaBankWeb.UsersControllerTest do
         {:ok, %{}}
       end)
 
+      user_data = user_fixture(:data_only)
+
       response =
         conn
-        |> post(~p"/api/users", @user_fixture)
+        |> post(~p"/api/users", user_data)
         |> json_response(:created)
 
       created_user = response["data"]
       %{password_hash: password_hash} = Repo.get(User, created_user["id"])
 
-      assert password_hash != @user_fixture["password"]
+      assert password_hash != user_data["password"]
     end
   end
 
@@ -87,7 +85,8 @@ defmodule BananaBankWeb.UsersControllerTest do
         {:ok, %{}}
       end)
 
-      {:ok, user} = Users.create(@user_fixture)
+      user_data = user_fixture(:data_only)
+      {:ok, user } = Users.create(user_data)
 
       conn
       |> delete(~p"/api/users/#{user.id}")
